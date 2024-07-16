@@ -22,7 +22,6 @@ public class CategoryController {
 
     private final CategoryService categoryService;
 
-
     // Hiển thị all các categories
     @GetMapping("") // http://localhost:8088/api/v1/categories?page=1&limit=10
     public ResponseEntity<?> getAllCategory(@RequestParam("page") int page,

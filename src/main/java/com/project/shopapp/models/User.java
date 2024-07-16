@@ -10,10 +10,9 @@ import java.util.Date;
 @Table(name = "users")
 @Getter
 @Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-//@Builder
-
 public class User extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -34,7 +33,7 @@ public class User extends BaseEntity {
     @Column(name = "is_active")
     private boolean isActive;
 
-    @Column(name = "day_of_birth")
+    @Column(name = "date_of_birth")
     private Date dayOfBirth;
 
     @Column(name = "facebook_account_id")
