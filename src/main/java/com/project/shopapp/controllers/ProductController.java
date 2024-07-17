@@ -2,7 +2,13 @@ package com.project.shopapp.controllers;
 
 
 import com.project.shopapp.dtos.ProductDTO;
+import com.project.shopapp.dtos.ProductImageDTO;
+import com.project.shopapp.exceptions.DataNotFoundException;
+import com.project.shopapp.models.Product;
+import com.project.shopapp.models.ProductImage;
+import com.project.shopapp.sercices.impl.IProductService;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -22,10 +28,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("${api.prefix}/products")
 public class ProductController {
 
+    private final IProductService productService;
     @GetMapping("")
     public ResponseEntity<String> getAllProduct(@RequestParam("page") int page,
                                                 @RequestParam("limit") int limit) {
@@ -37,17 +45,34 @@ public class ProductController {
         return ResponseEntity.ok("This is product: " + productId);
     }
 
-    @PostMapping(value = "", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> insertProduct(@Valid @ModelAttribute ProductDTO productDTO,
+    @PostMapping("")
+    public ResponseEntity<?> createProduct(@Valid @RequestBody ProductDTO productDTO,
+
                                            BindingResult result) {
         try {
             if (result.hasErrors()) {
-                List<String> errorMessages = result.getFieldErrors().stream()
-                                                    .map(FieldError::getDefaultMessage).toList();
+                List<String> errorMessages = result
+                                .getFieldErrors()
+                                .stream()
+                                .map(FieldError::getDefaultMessage)
+                                .toList();
                 return ResponseEntity.badRequest().body(errorMessages);
             }
-            List<MultipartFile> files = productDTO.getFiles();
+            Product newProduct = productService.createProduct(productDTO);
+            return ResponseEntity.ok("Products created successfully");
+        }
+        catch (Exception e) {
+            return  ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PostMapping(value = "uploads/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> uploadImages(@PathVariable("id") Long productId,
+                                            @ModelAttribute("files") List<MultipartFile> files) {
+        try {
+            Product exitingProduct = productService.getProductById(productId);
             files = files == null ? new ArrayList<>() : files; // Xử lý tránh bị nullPointer
+            List<ProductImage> productImages = new ArrayList<>();
             for (MultipartFile file : files) {
                 if (file.getSize() == 0) {
                     continue;
@@ -65,11 +90,19 @@ public class ProductController {
                 String filename = storeFile(file);
                 // Lưu vào đối tượng product trong DB => sẽ làm sau
                 // Lưu vào bảng product_images
+                ProductImage productImage = productService.createProductImage(
+                        exitingProduct.getId(),
+                        ProductImageDTO.builder()
+                                .imageURL(filename)
+                                .build());
+                productImages.add(productImage); // lấy danh sách các ảnh đã thêm
             }
-            return ResponseEntity.ok("Products created successfully");
+            return ResponseEntity.ok().body(productImages);
         } catch (Exception e) {
-            return  ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
+
+        // return null;
     }
 
     private String storeFile(MultipartFile file) throws IOException {
