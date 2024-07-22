@@ -11,6 +11,7 @@ import com.project.shopapp.models.ProductImage;
 import com.project.shopapp.repositories.CategoryRepository;
 import com.project.shopapp.repositories.ProductImageRepository;
 import com.project.shopapp.repositories.ProductRepository;
+import com.project.shopapp.responses.ProductResponse;
 import com.project.shopapp.sercices.impl.ICategoeyService;
 import com.project.shopapp.sercices.impl.IProductService;
 import lombok.RequiredArgsConstructor;
@@ -76,8 +77,10 @@ public class ProductService implements IProductService {
     }
 
     @Override
-    public Page<Product> getAllProducts(PageRequest pageRequest) {
-        return productRepository.findAll(pageRequest);
+    public Page<ProductResponse> getAllProducts(PageRequest pageRequest) {
+        return productRepository
+                .findAll(pageRequest)
+                .map(product -> ProductResponse.fromProduct(product));
     }
 
     @Override

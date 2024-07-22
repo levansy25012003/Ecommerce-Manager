@@ -1,14 +1,20 @@
 package com.project.shopapp.controllers;
 
 
+import com.github.javafaker.Faker;
 import com.project.shopapp.dtos.ProductDTO;
 import com.project.shopapp.dtos.ProductImageDTO;
 import com.project.shopapp.exceptions.DataNotFoundException;
 import com.project.shopapp.models.Product;
 import com.project.shopapp.models.ProductImage;
+import com.project.shopapp.responses.ProductListResponse;
+import com.project.shopapp.responses.ProductResponse;
 import com.project.shopapp.sercices.impl.IProductService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -36,14 +42,31 @@ public class ProductController {
 
     private final IProductService productService;
     @GetMapping("")
-    public ResponseEntity<String> getAllProduct(@RequestParam("page") int page,
-                                                @RequestParam("limit") int limit) {
-        return ResponseEntity.ok("Get product here");
+    public ResponseEntity<ProductListResponse> getAllProduct(@RequestParam("page") int page,
+                                                             @RequestParam("limit") int limit) {
+        // Tạo pageAble từ thông tin trang và giới hạn.
+        PageRequest pageRequest = PageRequest.of(page, limit, Sort.by("id").ascending());
+        Page<ProductResponse> productPage = productService.getAllProducts(pageRequest);
+
+        // Lấy ra tổng số trang
+        int totalPages = productPage.getTotalPages();
+
+        // Lấy ra danh sách sản phẩm
+        List<ProductResponse> productList = productPage.getContent();
+        return ResponseEntity.ok(ProductListResponse.builder()
+                                        .products(productList)
+                                        .totalPages(totalPages)
+                                .build());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<String> getProductById(@PathVariable("id") String productId) {
-        return ResponseEntity.ok("This is product: " + productId);
+    public ResponseEntity<?> getProductById(@PathVariable("id") Long productId) {
+        try {
+            Product exitingProduct = productService.getProductById(productId);
+            return ResponseEntity.ok(ProductResponse.fromProduct(exitingProduct));
+        } catch (DataNotFoundException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     @PostMapping("")
@@ -141,6 +164,37 @@ public class ProductController {
 
     @DeleteMapping("/{id}")
     public  ResponseEntity<String> deleteProductById(@PathVariable("id")  long id) {
-        return ResponseEntity.ok(String.format("This is product: %d", id));
+        try {
+            productService.deleteProduct(id);
+            return ResponseEntity.ok(String.format("This is product: %d", id));
+        } catch (DataNotFoundException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
+
+    @PostMapping("/generaFakeProduct")
+    public ResponseEntity<String> generaFakeProduct() {
+        Faker faker = new Faker();
+        for (int i = 0; i < 100; i++) {
+            String productName = faker.commerce().productName();
+            if(productService.existsByName(productName)) {
+                continue;
+            }
+            ProductDTO productDTO = ProductDTO.builder()
+                    .name(productName)
+                    .price((float)faker.number().numberBetween(10, 90_000_000))
+                    .description(faker.lorem().sentence())
+                    .thumbnail("")
+                    .categoryId((long)faker.number().numberBetween(2, 5))
+                    .build();
+            try {
+                productService.createProduct(productDTO);
+            } catch (Exception e) {
+                return ResponseEntity.badRequest().body(e.getMessage());
+            }
+        }
+        return ResponseEntity.ok("Fake Products created successfully");
+
+    }
+
 }
