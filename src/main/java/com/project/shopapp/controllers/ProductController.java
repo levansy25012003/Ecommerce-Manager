@@ -26,6 +26,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 @RequiredArgsConstructor
@@ -47,7 +48,6 @@ public class ProductController {
 
     @PostMapping("")
     public ResponseEntity<?> createProduct(@Valid @RequestBody ProductDTO productDTO,
-
                                            BindingResult result) {
         try {
             if (result.hasErrors()) {
@@ -59,7 +59,7 @@ public class ProductController {
                 return ResponseEntity.badRequest().body(errorMessages);
             }
             Product newProduct = productService.createProduct(productDTO);
-            return ResponseEntity.ok("Products created successfully");
+            return ResponseEntity.ok(newProduct);
         }
         catch (Exception e) {
             return  ResponseEntity.badRequest().body(e.getMessage());
@@ -68,11 +68,13 @@ public class ProductController {
 
     @PostMapping(value = "uploads/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> uploadImages(@PathVariable("id") Long productId,
-                                            @ModelAttribute("files") List<MultipartFile> files) {
+                                          @ModelAttribute("files") List<MultipartFile> files) {
         try {
             Product exitingProduct = productService.getProductById(productId);
             files = files == null ? new ArrayList<>() : files; // Xử lý tránh bị nullPointer
             List<ProductImage> productImages = new ArrayList<>();
+            if (files.size() > ProductImage.MAXIMUM_IMAGES_PER_PRODUCT)
+                return ResponseEntity.badRequest().body("You can only upload maximun 5 images");
             for (MultipartFile file : files) {
                 if (file.getSize() == 0) {
                     continue;
@@ -106,8 +108,11 @@ public class ProductController {
     }
 
     private String storeFile(MultipartFile file) throws IOException {
+        if (!isImageFile(file) && file.getOriginalFilename() == null) {
+            throw new IOException("Invalid image file format");
+        }
         // Lấy tên file
-        String filename = StringUtils.cleanPath(file.getOriginalFilename());
+        String filename = StringUtils.cleanPath(Objects.requireNonNull(file.getOriginalFilename()));
 
         // Thêm UUID và trước tên file để đảm bào file là duy nhất
         String uniqueFilename = UUID.randomUUID().toString() + "_" + filename;
@@ -126,6 +131,12 @@ public class ProductController {
         // Sao chép file vào thư mục đích
         Files.copy(file.getInputStream(), destination, StandardCopyOption.REPLACE_EXISTING);
         return uniqueFilename;
+    }
+
+    // Kiểm tra xem có file upload có là file ảnh hay không.
+    private boolean isImageFile(MultipartFile file) {
+        String contentType = file.getContentType();
+        return contentType != null && contentType.startsWith("image/");
     }
 
     @DeleteMapping("/{id}")
