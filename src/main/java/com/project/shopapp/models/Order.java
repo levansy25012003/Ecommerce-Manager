@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.util.Date;
 
 @Table(name = "orders")
 @Getter
@@ -38,7 +39,7 @@ public class Order {
     private String note;
 
     @Column(name="order_date")
-    private LocalDate orderDate;
+    private Date orderDate;
 
     @Column(name = "status")
     private String status;
