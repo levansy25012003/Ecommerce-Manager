@@ -1,9 +1,8 @@
-package com.project.shopapp.sercices.impl;
+package com.project.shopapp.services.impl;
 
 import com.project.shopapp.dtos.OrderDTO;
 import com.project.shopapp.exceptions.DataNotFoundException;
 import com.project.shopapp.models.Order;
-import com.project.shopapp.responses.OrderResponse;
 
 import java.util.List;
 

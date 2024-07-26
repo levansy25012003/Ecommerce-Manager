@@ -1,4 +1,4 @@
-package com.project.shopapp.sercices.impl;
+package com.project.shopapp.services.impl;
 
 import com.project.shopapp.dtos.ProductDTO;
 import com.project.shopapp.dtos.ProductImageDTO;

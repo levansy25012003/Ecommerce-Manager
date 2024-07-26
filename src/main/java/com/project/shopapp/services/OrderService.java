@@ -1,4 +1,4 @@
-package com.project.shopapp.sercices;
+package com.project.shopapp.services;
 
 import com.project.shopapp.dtos.OrderDTO;
 import com.project.shopapp.exceptions.DataNotFoundException;
@@ -7,8 +7,7 @@ import com.project.shopapp.models.OrderStatus;
 import com.project.shopapp.models.User;
 import com.project.shopapp.repositories.OrderRepository;
 import com.project.shopapp.repositories.UserRepository;
-import com.project.shopapp.responses.OrderResponse;
-import com.project.shopapp.sercices.impl.IOrderService;
+import com.project.shopapp.services.impl.IOrderService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
@@ -17,8 +16,6 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
-import java.util.Locale;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor

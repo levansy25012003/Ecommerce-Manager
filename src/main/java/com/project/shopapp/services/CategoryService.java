@@ -1,9 +1,9 @@
-package com.project.shopapp.sercices;
+package com.project.shopapp.services;
 
 import com.project.shopapp.dtos.CategoryDTO;
 import com.project.shopapp.models.Category;
 import com.project.shopapp.repositories.CategoryRepository;
-import com.project.shopapp.sercices.impl.ICategoeyService;
+import com.project.shopapp.services.impl.ICategoeyService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

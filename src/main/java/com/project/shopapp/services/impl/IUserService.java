@@ -1,11 +1,11 @@
-package com.project.shopapp.sercices.impl;
+package com.project.shopapp.services.impl;
 
 import com.project.shopapp.dtos.UserDTO;
 import com.project.shopapp.exceptions.DataNotFoundException;
 import com.project.shopapp.models.User;
 
 public interface IUserService {
-    User createUser(UserDTO userDTO) throws DataNotFoundException;
+    User createUser(UserDTO userDTO) throws Exception;
 
-    String login(String phoneNumber, String password);
+    String login(String phoneNumber, String password) throws Exception;
 }

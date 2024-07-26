@@ -1,4 +1,4 @@
-package com.project.shopapp.sercices;
+package com.project.shopapp.services;
 
 import com.project.shopapp.dtos.OrderDetailDTO;
 import com.project.shopapp.exceptions.DataNotFoundException;
@@ -8,12 +8,10 @@ import com.project.shopapp.models.Product;
 import com.project.shopapp.repositories.OrderDetailRepository;
 import com.project.shopapp.repositories.OrderRepository;
 import com.project.shopapp.repositories.ProductRepository;
-import com.project.shopapp.responses.OrderDetailResponse;
-import com.project.shopapp.sercices.impl.IOrderDetailService;
+import com.project.shopapp.services.impl.IOrderDetailService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.DateTimeException;
 import java.util.List;
 
 @Service
